@@ -1,4 +1,4 @@
-# tlg-video-control
+# TLG Video Control
 Control background video playback with native Webflow interactions. Say goodbye to heavy image sequences embedded into Lottie files.
 
 ## 🔗 Snippet
@@ -53,14 +53,14 @@ Add this to the background video elements to set the maximum fps for the playbac
 
 | Attribute                      | Description                                                                     | Values          | Default |
 |:-------------------------------|:---------------------------------------------------------------------------------|:-----------------|:--------|
-| tlg-video-control              | Attribute to identify background video elements for control. Set to `video-1`, `video-2`, `video-3` and so on.                    | String           |         |
-| tlg-video-control-fps          | Optional attribute to set the maximum frames per second for video playback. Recommended to leave at 30 fps for best performance across browsers.      | Number           | 30      |
+| tlg-video-control              | Attribute to identify background video elements for control. Set to `video-1`, `video-2`, `video-3` and so on.                    | `video{index}`           |         |
+| tlg-video-control-fps          | Optional attribute to set the maximum frames per second for video playback. Recommended to leave at 30 fps for best performance across browsers.      | Number          | 30      |
 
 ####  Variables
 
 | Variable          | Description                                   | Type   | 
 |:------------------|:----------------------------------------------|:-------|
-| `--tlg/video-control-1`   | CSS variable used for video control. Type is size, but only the numerical value is used (the unit doesn't matter). In Webflow it needs to be defined as inside the tlg folder like this `--tlg/video-control-1` the actual variable will be `--tlg--video-control-1`.           | Size | `--tlg/video-control-1`   |
+| `tlg/video-control-{index}`   | CSS variable used for video control. Type must be size, but only the numerical value is used (the unit doesn't matter). In Webflow it needs to be defined like this `tlg/video-control-1`, `tlg/video-control-2`, `tlg/video-control-3` and so on, which will create a folder called 'tlg'.           | Size | `--tlg/video-control-1`   |
 
 ## ☝️ Recommendations
 
