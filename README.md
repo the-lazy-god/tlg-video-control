@@ -7,7 +7,7 @@ Copy the `<script>` below and paste it before the `</body>` tag in your Webflow 
 
 ```html
 <!-- Snippets by The Lazy God • Video Control -->
-<script defer src="https://cdn.jsdelivr.net/gh/the-lazy-god/tlg-video-control@main/tlg-video-control.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/gh/the-lazy-god/tlg-video-control@v1.0.0/tlg-video-control.min.js"></script>
 ``` 
 
 ## 🔧 Setup
