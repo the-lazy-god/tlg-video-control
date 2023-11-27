@@ -46,7 +46,7 @@ Add this to the background video elements to set the maximum fps for the playbac
 
 -   Name: `tlg-video-control-fps`
 -   Value: `{number}` (Default = 30)
-- 
+
 ## 📦 Attributes and variables
 
 ### Attributes
