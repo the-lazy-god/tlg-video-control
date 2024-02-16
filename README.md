@@ -53,7 +53,7 @@ Add this to the background video elements to set the maximum fps for the playbac
 
 | Attribute                      | Description                                                                     | Values          | Default |
 |:-------------------------------|:---------------------------------------------------------------------------------|:-----------------|:--------|
-| tlg-video-control              | Attribute to identify background video elements for control. Set to `video-1`, `video-2`, `video-3` and so on.                    | `video{index}`           |         |
+| tlg-video-control              | Attribute to identify background video elements for control. Set to `video-1`, `video-2`, `video-3` and so on.                    | `video-{index}`           |         |
 | tlg-video-control-fps          | Optional attribute to set the maximum frames per second for video playback. Recommended to leave at 30 fps for best performance across browsers.      | Number          | 30      |
 
 ####  Variables
