@@ -1,6 +1,10 @@
 # TLG Video Control
 Control background video playback with native Webflow interactions. Say goodbye to heavy image sequences embedded into Lottie files.
 
+Click below to see the video guide:
+
+[<img src="https://img.youtube.com/vi/t6qI-LxO0J4/maxresdefault.jpg" width="50%">](https://youtu.be/t6qI-LxO0J4)
+
 ## 🔗 Snippet
 
 Copy the `<script>` below and paste it before the `</body>` tag in your Webflow project on the pages where you need it.
