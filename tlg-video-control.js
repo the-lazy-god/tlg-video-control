@@ -1,80 +1,96 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const videos = document.querySelectorAll('[tlg-video-control^="video-"] video');
+  const elements = document.querySelectorAll('[tlg-video-control]');
   const root = document.documentElement;
 
-  /* Rate-limiting function for smoother execution at a specified frames-per-second (fps) */
-  const rateLimit = (func, fps) => {
-    let lastFunc;
-    let lastRan;
-    const interval = 1000 / fps;
-    return function () {
-      const context = this;
-      const args = arguments;
-      if (!lastRan) {
-        func.apply(context, args);
-        lastRan = Date.now();
-      } else {
-        clearTimeout(lastFunc);
-        lastFunc = setTimeout(function () {
-          if ((Date.now() - lastRan) >= interval) {
-            func.apply(context, args);
-            lastRan = Date.now();
-          }
-        }, interval - (Date.now() - lastRan));
-      }
-    };
-  };
+  const rootComputedStyle = getComputedStyle(root);
+  const INTERVAL = 1000 / 30; // 30 FPS
 
-  /* Handles the playback of the videos based on the observed CSS variable */
-  const playback = (videoRef) => {
-    let videoControlValue = root.style.getPropertyValue(videoRef.controlVariable).trim();
-    if (!videoControlValue) {
-      videoControlValue = getComputedStyle(root).getPropertyValue(videoRef.controlVariable).trim();
-    }
-
-    videoControlValue = parseFloat(videoControlValue.replace('%', ''));
-    if (!isNaN(videoControlValue) && videoControlValue !== videoRef.lastControlValue && videoRef.video.readyState >= 1) {
-      videoRef.lastControlValue = videoControlValue;
-      const seekTime = videoRef.video.duration * (videoControlValue / 100);
-
-      requestAnimationFrame(() => {
-        videoRef.video.currentTime = Math.min(Math.max(seekTime, 0), videoRef.video.duration - 0.01);
-      });
-    }
-  };
-  /* Sets up necessary configurations for each video, and adds MutationObservers for tracking changes in the CSS variable */
-  videos.forEach(video => {
-    video.style.pointerEvents = "none";
-    video.load();
-    const videoParent = video.parentElement;
-    const videoControl = videoParent.getAttribute('tlg-video-control');
-    const videoIndex = videoControl.split('-')[1];
-    const controlVariable = `--tlg--video-control-${videoIndex}`;
-
-    // Retrieve the FPS from the attribute, or default to 30 if it's not available or not a number
-    const fpsAttribute = videoParent.getAttribute('tlg-video-control-fps');
-    const fpsValue = isNaN(parseInt(fpsAttribute)) ? 30 : parseInt(fpsAttribute);
-
-    const videoRef = {
-      video,
-      controlVariable,
-      lastControlValue: null
-    };
-
-    // Skip setting up the observer if the CSS variable is not found.
-    if (!getComputedStyle(root).getPropertyValue(controlVariable).trim()) {
-      console.error(`Error: Expected CSS variable "${controlVariable}" not found.`);
+  const refs = [];
+  elements.forEach(element => {
+    // Use the element itself if it's a <video>, otherwise find the video child inside it
+    const video = element.tagName === 'VIDEO' ? element : element.querySelector('video');
+    if (!video) {
+      console.error('Error: No <video> element found for', element);
       return;
     }
 
-    const rateLimitedPlayback = rateLimit(() => playback(videoRef), fpsValue);
-    const observer = new MutationObserver(() => {
-      rateLimitedPlayback();
+    // Get the CSS variable name from the attribute
+    const raw = element.getAttribute('tlg-video-control');
+    const match = raw && raw.match(/--[\w-]+/); // Read the raw variable name with regex
+    if (!match) {
+      console.error('Error: No CSS custom property found in attribute', raw, element);
+      return;
+    }
+    const controlVariable = match[0];
+
+    video.style.pointerEvents = "none";
+    
+    video.loop = false;
+    video.load();
+
+    // Throw an error if the CSS variable is not found
+    if (!rootComputedStyle.getPropertyValue(controlVariable).trim()) {
+      console.error(`Error: CSS variable "${controlVariable}" not found. Make sure it is defined and initialized.`);
+      return;
+    }
+
+    refs.push({
+      video,
+      controlVariable,
+      lastControlValue: null,
+      pendingTime: NaN
     });
-    observer.observe(root, {
-      attributes: true,
-      attributeFilter: ['style'],
-      subtree: true
-    });
+  });
+
+  if (!refs.length) return;
+
+  // Single batched update for the whole frame: read all variables, then write all currentTimes.
+  let scheduled = false;
+  let lastApplied = 0;
+
+  const flush = () => {
+    scheduled = false;
+    const now = performance.now();
+
+    // Cap at 30 FPS. If a fresh value arrives while gated, keep a frame scheduled
+    if (now - lastApplied < INTERVAL) {
+      scheduled = true;
+      requestAnimationFrame(flush);
+      return;
+    }
+    lastApplied = now;
+
+    // Resolve each video's target seek time.
+    for (const ref of refs) {
+      // Read the value of the CSS variable on the root element
+      const percent = parseFloat(root.style.getPropertyValue(ref.controlVariable));
+      if (isNaN(percent) || percent === ref.lastControlValue || ref.video.readyState < 1) {
+        continue;
+      }
+
+      ref.lastControlValue = percent;
+      const seekTime = ref.video.duration * (percent / 100);
+      ref.pendingTime = Math.min(Math.max(seekTime, 0), ref.video.duration);
+    }
+
+    // Apply the resolved seek times.
+    for (const ref of refs) {
+      if (!isNaN(ref.pendingTime)) {
+        ref.video.currentTime = ref.pendingTime;
+        ref.pendingTime = NaN;
+      }
+    }
+  };
+
+  // Observe the root element for style changes
+  const observer = new MutationObserver(() => {
+    if (!scheduled) {
+      scheduled = true;
+      requestAnimationFrame(flush);
+    }
+  });
+  observer.observe(root, {
+    attributes: true,
+    attributeFilter: ['style']
   });
 });
