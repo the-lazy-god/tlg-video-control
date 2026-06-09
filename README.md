@@ -72,7 +72,7 @@ Most videos are encoded with a large GOP (few keyframes) to save file size — g
 
 **Firefox** seems to struggle the most with scrubbing, but it gets good with a low GOP — so if you're seeing jank there, that's the first thing to try.
 
-To re-encode a video with a lower GOP, use my microtool: [Keyframes](https://keyframes.thelazygod.com).
+You can re-encode a video with a lower GOP locally with FFMPEG, or use my in-browser microtool: [Keyframes](https://keyframes.thelazygod.com).
 
 ## ☝️ Recommendations
 
